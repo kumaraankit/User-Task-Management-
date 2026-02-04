@@ -8,7 +8,7 @@ services:
     depends_on:
       - db
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000 || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +22,10 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user}"]
+      # Ensure pg_isready checks the intended database (POSTGRES_DB). Without -d
+      # pg_isready will attempt to connect to a database with the same name as
+      # the user which may not exist (causing FATAL: database "user" does not exist).
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-dbname}" ]
       interval: 10s
       timeout: 5s
       retries: 5
